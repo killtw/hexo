@@ -16,7 +16,10 @@ rss:
 # Specify the date when the site was setup
 #since: 2015
 
-
+# Canonical, set a canonical link tag in your hexo, you could use it for your SEO of blog.
+# See: https://support.google.com/webmasters/answer/139066
+# Tips: Before you open this tag, remeber set up your URL in hexo _config.yml ( ex. url: http://yourdomain.com )
+canonical: true
 
 
 # ---------------------------------------------------------------
@@ -27,7 +30,7 @@ rss:
 menu:
   home: /
   #categories: /categories
-  #about: /about
+  about: https://about.com/killtw
   archives: /archives
   tags: /tags
   #commonweal: /404.html
@@ -56,9 +59,9 @@ menu_icons:
 # ---------------------------------------------------------------
 
 # Schemes
-scheme: Muse
-#scheme: Mist
-#scheme: Pisces
+# scheme: Muse
+scheme: Mist
+# scheme: Pisces
 
 
 # ---------------------------------------------------------------
@@ -117,8 +120,9 @@ font:
 # Social Links
 # Key is the link label showing to end users.
 # Value is the target link (E.g. GitHub: https://github.com/iissnan)
-#social:
-  #LinkLabel: Link
+social:
+  GitHub: https://github.com/killtw
+  Twitter: https://twitter.com/killtw
 
 
 # Social Links Icons
@@ -166,9 +170,9 @@ sidebar:
   #  - always  expand for all pages automatically
   #  - hide    expand only when click on the sidebar toggle icon.
   #  - remove  Totally remove sidebar including sidebar toggler.
-  display: post
+  # display: post
   #display: always
-  #display: hide
+  display: hide
   #display: remove
 
 
@@ -198,7 +202,7 @@ custom_logo:
 # Available value:
 #    normal | night | night eighties | night blue | night bright
 # https://github.com/chriskempson/tomorrow-theme
-highlight_theme: normal
+highlight_theme: night
 
 
 # Automatically scroll page to section which is under <!-- more --> mark.
@@ -241,7 +245,7 @@ mathjax:
 #duoshuo_shortname:
 
 # Disqus
-#disqus_shortname:
+disqus_shortname: killtwim
 
 # Baidu Share
 # Available value:
@@ -262,7 +266,7 @@ mathjax:
 
 
 # Google Analytics
-#google_analytics:
+google_analytics: UA-80045026-1
 
 # CNZZ count
 #cnzz_siteid:
@@ -286,6 +290,13 @@ facebook_sdk:
   fb_admin:     #<user_id>
   like_button:  #true
   webmaster:    #true
+
+# Facebook comments plugin
+# This plugin depends on Facebook SDK.
+# If facebook_sdk.enable is false, Facebook comments plugin is unavailable.
+facebook_comments_plugin:
+  enable: false
+  num_of_posts: 10
 
 
 # Show number of visitors to each article.
