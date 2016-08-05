@@ -3,10 +3,7 @@ title: Laravel Valet with Docker
 desc: 前一陣子 Laravel 官方推出了輕量化的開發環境解決方案 Valet，他跟 Homestead 最大的不同在於他不是一個完整的 VM，基本上他只有用 Caddy 作為 Web Server 以及 Dnsmasq 來管理網址，也因為使用 Caddy 的關係，所以目前支援的系統只有 Mac。
 photos: /laravel-valet-with-docker/laravel-valet-with-docker.png
 date: 2016-06-29 11:41:43
-tags:
-  - laravel
-  - php
-  - docker
+tags: [laravel, php, docker]
 ---
 
 前一陣子 [Laravel](https://laravel.com/) 官方推出了輕量化的開發環境解決方案 [Valet](https://laravel.com/docs/master/valet)，他跟 [Homestead](https://laravel.com/docs/master/homestead) 最大的不同在於他不是一個完整的 VM，基本上他只有用 Caddy 作為 Web Server 以及 Dnsmasq 來管理網址，也因為使用 Caddy 的關係，所以目前支援的系統只有 Mac。
