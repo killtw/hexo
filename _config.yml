@@ -71,8 +71,6 @@ theme: next
 deploy:
   - type: git
     repo: git@github.com:killtw/hexo.git
-  - type: heroku
-    repo: dokku@dokku.killtw.im:hexo
 
 archive_generator:
   per_page: 0
