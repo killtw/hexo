@@ -37,6 +37,7 @@ RubyKaigi 的議程主要是比較偏向 Ruby 語言本身，應用的部分比�
 * Day 2 Shopify 卡拉 OK
 緊接在 ESM 酒會之後的二次會是由 Shopify 贊助的卡拉 OK 活動，沒有去唱過日K的本人想說應該去見識一下世面，沒想到就這樣被推下坑唱了一首（艸），完全沒有日語能力的狀況下要好好的唱完一首歌真的很困難阿，不像同事那麼得心應手。
 ![總招](/artist-meet-rubykaigi/ryudoawaru.jpg)
+![日本人唱起歌來真的是很有趣](/artist-meet-rubykaigi/karaoke.gif)
 
 * Day 3 官方 After Party
 全部議程結束之後官方在當地的 SOGO 頂樓舉辦了官方的 After Party，餐飲都是無限量供應，加上不需要報名所以來了非常多的人，可以見到許多講者以及 Ruby committer，可惜場地是一堆桌椅的形式，交流起來稍有困難，不過後來發現站在啤酒機前可以很輕易的跟人聊天😂
