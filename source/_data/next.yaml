@@ -1,0 +1,205 @@
+# Remove unnecessary files after hexo generate.
+minify: true
+
+favicon:
+  small: /favicon.ico
+  medium: /favicon.ico
+  apple_touch_icon: /favicon.ico
+  safari_pinned_tab: /favicon.ico
+  #android_manifest: /images/manifest.json
+  #ms_browserconfig: /images/browserconfig.xml
+
+footer:
+  powered:
+    # Version info of Hexo after Hexo link (vX.X.X).
+    version: false
+
+  theme:
+    # Theme & scheme info link (Theme - NexT.scheme).
+    enable: false
+
+# Creative Commons 4.0 International License.
+# See: https://creativecommons.org/share-your-work/licensing-types-examples
+# Available values of license: by | by-nc | by-nc-nd | by-nc-sa | by-nd | by-sa | zero
+# You can set a language value if you prefer a translated version of CC license, e.g. deed.zh
+# CC licenses are available in 39 languages, you can find the specific and correct abbreviation you need on https://creativecommons.org
+creative_commons:
+  license: by-nc-sa
+  sidebar: false
+  post: false
+  language:
+
+
+# ---------------------------------------------------------------
+# Scheme Settings
+# ---------------------------------------------------------------
+
+scheme: Mist
+
+
+# ---------------------------------------------------------------
+# Menu Settings
+# ---------------------------------------------------------------
+
+# Usage: `Key: /link/ || icon`
+# Key is the name of menu item. If the translation for this item is available, the translated text will be loaded, otherwise the Key name will be used. Key is case-senstive.
+# Value before `||` delimiter is the target link, value after `||` delimiter is the name of Font Awesome icon.
+# When running the site in a subdirectory (e.g. yoursite.com/blog), remove the leading slash from link value (/archives -> archives).
+# External url should start with http:// or https://
+menu:
+  home: / || home
+  about: https://about.me/killtw || user
+  tags: /tags/ || tags
+  archives: /archives/ || archive
+
+# ---------------------------------------------------------------
+# Sidebar Settings
+# See: https://theme-next.org/docs/theme-settings/sidebar
+# ---------------------------------------------------------------
+
+sidebar:
+  # Sidebar Position.
+  position: right
+
+  # Sidebar Display (only for Muse | Mist), available values:
+  #  - post    expand on posts automatically. Default.
+  #  - always  expand for all pages automatically.
+  #  - hide    expand only when click on the sidebar toggle icon.
+  #  - remove  totally remove sidebar including sidebar toggle.
+  display: hide
+
+# Sidebar Avatar
+avatar:
+  # Replace the default image and set the url here.
+  url: https://graph.facebook.com/1069527876/picture?width=200&height=200
+
+# Social Links
+# Usage: `Key: permalink || icon`
+# Key is the link label showing to end users.
+# Value before `||` delimiter is the target permalink, value after `||` delimiter is the name of Font Awesome icon.
+social:
+  GitHub: https://github.com/killtw || github
+  Facebook: https://www.facebook.com/killtw || facebook
+
+# ---------------------------------------------------------------
+# Post Settings
+# See: https://theme-next.org/docs/theme-settings/posts
+# ---------------------------------------------------------------
+
+# Automatically excerpt description in homepage as preamble text.
+excerpt_description: true
+
+# Read more button
+# If true, the read more button will be displayed in excerpt section.
+read_more_btn: true
+
+# Post meta display settings
+post_meta:
+  item_text: true
+  created_at: true
+  updated_at:
+    enable: true
+    another_day: true
+  categories: true
+
+# Post wordcount display settings
+# Dependencies: https://github.com/theme-next/hexo-symbols-count-time
+symbols_count_time:
+  separated_meta: true
+  item_text_post: true
+  item_text_total: false
+  awl: 4
+  wpm: 275
+
+# Use icon instead of the symbol # to indicate the tag at the bottom of the post
+tag_icon: false
+
+# Show previous post and next post in post footer if exists
+# Available values: left | right | false
+post_navigation: left
+
+# ---------------------------------------------------------------
+# Misc Theme Settings
+# ---------------------------------------------------------------
+
+codeblock:
+  # Code Highlight theme
+  # Available values: normal | night | night eighties | night blue | night bright | solarized | solarized dark | galactic
+  # See: https://github.com/chriskempson/tomorrow-theme
+  highlight_theme: night
+
+# ---------------------------------------------------------------
+# Font Settings
+# See: https://theme-next.org/docs/theme-settings/#Fonts-Customization
+# ---------------------------------------------------------------
+# Find fonts on Google Fonts (https://www.google.com/fonts)
+# All fonts set here will have the following styles:
+#   light | light italic | normal | normal italic | bold | bold italic
+# Be aware that setting too much fonts will cause site running slowly
+# ---------------------------------------------------------------
+# To avoid space between header and sidebar in scheme Pisces / Gemini, Web Safe fonts are recommended for `global` (and `title`):
+# Arial | Tahoma | Helvetica | Times New Roman | Courier New | Verdana | Georgia | Palatino | Garamond | Comic Sans MS | Trebuchet MS
+# ---------------------------------------------------------------
+
+font:
+  enable: true
+
+# ---------------------------------------------------------------
+# SEO Settings
+# ---------------------------------------------------------------
+
+# Change headers hierarchy on site-subtitle (will be main site description) and on all post / page titles for better SEO-optimization.
+seo: true
+
+# ---------------------------------------------------------------
+# Third Party Plugins & Services Settings
+# See: https://theme-next.org/docs/third-party-services/
+# You may need to install dependencies or set CDN URLs in `vendors`
+# There are two different CDN providers by default:
+#   - jsDelivr (cdn.jsdelivr.net), works everywhere even in China
+#   - CDNJS (cdnjs.cloudflare.com), provided by cloudflare
+# ---------------------------------------------------------------
+
+# ---------------------------------------------------------------
+# Comments Settings
+# See: https://theme-next.org/docs/third-party-services/comments
+# ---------------------------------------------------------------
+
+# Multiple Comment System Support
+comments:
+  # Choose a comment system to be displayed by default.
+  # Available values: changyan | disqus | disqusjs | gitalk | livere | valine
+  active: disqus
+  
+# Disqus
+disqus:
+  enable: true
+  shortname: killtwim
+  count: true
+  #post_meta_order: 0
+
+
+# ---------------------------------------------------------------
+# Statistics and Analytics
+# See: https://theme-next.org/docs/third-party-services/statistics-and-analytics
+# ---------------------------------------------------------------
+
+# Google Analytics
+google_analytics:
+  tracking_id: UA-80045026-1
+
+# ---------------------------------------------------------------
+# Search Services
+# See: https://theme-next.org/docs/third-party-services/search-services
+# ---------------------------------------------------------------
+
+# Algolia Search
+# For more information: https://www.algolia.com
+algolia_search:
+  enable: false
+  hits:
+    per_page: 10
+  labels:
+    input_placeholder: Search for Posts
+    hits_empty: "We didn't find any results for the search: ${query}"
+    hits_stats: "${hits} results found in ${time} ms"

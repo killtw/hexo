@@ -1395,6 +1395,13 @@ hexo-server@^1.0.0:
     open "^6.3.0"
     serve-static "^1.14.1"
 
+hexo-symbols-count-time@^0.7.0:
+  version "0.7.0"
+  resolved "https://registry.yarnpkg.com/hexo-symbols-count-time/-/hexo-symbols-count-time-0.7.0.tgz#71bc58f7c0e7e32ecb2f4820d7c8b4dddee4f47d"
+  integrity sha512-x2ahTBI6SDTRz0i+EfbMwdQv0ioIji0EE5i8iswbEGsbK9ompDX0f0K73L7sNUL/cp48vRCYge1TzPzPr22M5A==
+  dependencies:
+    hexo-util "1.5.0"
+
 hexo-util@1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/hexo-util/-/hexo-util-1.0.0.tgz#2545efcd66e345ef92fe48a73a35470cd65f0b2a"
@@ -1403,6 +1410,18 @@ hexo-util@1.0.0:
     bluebird "^3.5.2"
     camel-case "^3.0.0"
     cross-spawn "^6.0.5"
+    highlight.js "^9.13.1"
+    html-entities "^1.2.1"
+    striptags "^3.1.1"
+
+hexo-util@1.5.0:
+  version "1.5.0"
+  resolved "https://registry.yarnpkg.com/hexo-util/-/hexo-util-1.5.0.tgz#bf931c176d4d19965b9e154a4b6767cdde6e2b9c"
+  integrity sha512-AIDf3xnn4+E+2uiKh7Qk+sH6HH/CFME38Kvi4hqnMPks8BDACWvfXoMOK4mydGfjps96tsMwdLT5+AQx1xv6PQ==
+  dependencies:
+    bluebird "^3.5.2"
+    camel-case "^3.0.0"
+    cross-spawn "^7.0.0"
     highlight.js "^9.13.1"
     html-entities "^1.2.1"
     striptags "^3.1.1"
