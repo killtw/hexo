@@ -5,7 +5,7 @@ date: 2017-10-06 14:48:53
 photos: /artist-meet-rubykaigi/rubykaigi2017.png
 desc: 前一陣子離開待了兩年多的 flyingV，休息了一陣子之後加入在台灣經營 Ruby 社群已久的五倍紅寶石，加入後剛好碰上五倍的員工旅遊，考慮手邊還有一點日幣應該不會花太多錢的狀況下就跟團了。
 ---
-前一陣子離開待了兩年多的 [flyingV](https://www.flyingv.cc)，休息了一陣子之後加入在台灣經營 Ruby 社群已久的 [五倍紅寶石](https:://5xruby.tw)，加入後剛好碰上五倍的員工旅遊，考慮手邊還有一點日幣應該不會花太多錢的狀況下就跟團了。
+前一陣子離開待了兩年多的 [flyingV](https://www.flyingv.cc)，休息了一陣子之後加入在台灣經營 Ruby 社群已久的 [五倍紅寶石](https://5xruby.tw)，加入後剛好碰上五倍的員工旅遊，考慮手邊還有一點日幣應該不會花太多錢的狀況下就跟團了。
 
 ## RubyKaigi?
 [RubyKaigi](http://rubykaigi.org) 是日本最大的 Ruby 研討會，Kaigi 就是日文 `會議` 的意思，從 2006 年舉辦至今都是連續兩到三天的活動，同時每年也都會在日本境內不同的城市舉行，例如 [2015]((http://rubykaigi.org/2015) 是在東京、[2016](http://rubykaigi.org/2016) 在京都、今年在廣島。
