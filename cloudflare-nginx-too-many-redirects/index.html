@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon.ico">
+  <link rel="mask-icon" href="/favicon.ico" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"blog.killtw.im","root":"/","scheme":"Mist","version":"7.7.1","exturl":false,"sidebar":{"position":"right","display":"hide","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"active":"disqus","style":"tabs","storage":true,"lazyload":false,"nav":null,"activeClass":"disqus"},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="最近在試著將 blog 利用 Cloudflare 加上 CDN 的時候發現如果開啟 SSL 的功能時會發生如首圖 Too many redirects 的錯誤，研究了一下發現是因為 Cloutflare 搭配 nginx 時在某些情況下會產生這種狀況，也找到了幾種方式來解決這惱人的問題。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Cloudflare with nginx: Too many redirects">
+<meta property="og:url" content="https://blog.killtw.im/cloudflare-nginx-too-many-redirects/index.html">
+<meta property="og:site_name" content="買銀杏只會忘了吃">
+<meta property="og:description" content="最近在試著將 blog 利用 Cloudflare 加上 CDN 的時候發現如果開啟 SSL 的功能時會發生如首圖 Too many redirects 的錯誤，研究了一下發現是因為 Cloutflare 搭配 nginx 時在某些情況下會產生這種狀況，也找到了幾種方式來解決這惱人的問題。">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://blog.killtw.im/cloudflare-nginx-too-many-redirects/too-many-redirects.png">
+<meta property="article:published_time" content="2016-08-05T05:04:43.000Z">
+<meta property="article:modified_time" content="2020-02-17T08:23:12.620Z">
+<meta property="article:author" content="Karl Li">
+<meta property="article:tag" content="ssl">
+<meta property="article:tag" content="cloudflare">
+<meta property="article:tag" content="nginx">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://blog.killtw.im/cloudflare-nginx-too-many-redirects/too-many-redirects.png">
+
+<link rel="canonical" href="https://blog.killtw.im/cloudflare-nginx-too-many-redirects/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>Cloudflare with nginx: Too many redirects | 買銀杏只會忘了吃</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-80045026-1"></script>
+    <script>
+      if (CONFIG.hostname === location.hostname) {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'UA-80045026-1');
+      }
+    </script>
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="買銀杏只會忘了吃" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">買銀杏只會忘了吃</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <h1 class="site-subtitle" itemprop="description">記性不好，還是寫起來好惹</h1>
+      
+  </div>
+
+  <div class="site-nav-right"></div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="https://about.me/killtw" rel="noopener" target="_blank"><i class="fa fa-fw fa-user"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="en">
+    <link itemprop="mainEntityOfPage" href="https://blog.killtw.im/cloudflare-nginx-too-many-redirects/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://graph.facebook.com/1069527876/picture?width=200&height=200">
+      <meta itemprop="name" content="Karl Li">
+      <meta itemprop="description" content="記性不好，還是寫起來好惹 by Karl Li">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="買銀杏只會忘了吃">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          Cloudflare with nginx: Too many redirects
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2016-08-05 13:04:43" itemprop="dateCreated datePublished" datetime="2016-08-05T13:04:43+08:00">2016-08-05</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2020-02-17 16:23:12" itemprop="dateModified" datetime="2020-02-17T16:23:12+08:00">2020-02-17</time>
+              </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="fa fa-comment-o"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus: </span>
+    
+    <a title="disqus" href="/cloudflare-nginx-too-many-redirects/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="cloudflare-nginx-too-many-redirects/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>881</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>1 mins.</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <div class="post-gallery" itemscope itemtype="http://schema.org/ImageGallery">
+            <img src="/cloudflare-nginx-too-many-redirects/too-many-redirects.png" itemprop="contentUrl">
+        </div>
+        <p>最近在試著將 blog 利用 <a href="https://www.cloudflare.com/" target="_blank" rel="noopener">Cloudflare</a> 加上 CDN 的時候發現如果開啟 SSL 的功能時會發生如首圖 <strong>Too many redirects</strong> 的錯誤，研究了一下發現是因為 Cloutflare 搭配 nginx 時在某些情況下會產生這種狀況，也找到了幾種方式來解決這惱人的問題。</p>
+<a id="more"></a>
+
+<p>在研究的過程中我一共找到三種不同的解法，基本上都不用去動到 nginx 的設定，分別是</p>
+<ol>
+<li><a href="#strict">全面 strict 法</a></li>
+<li><a href="#force-https">強制 https 法</a></li>
+<li><a href="#page-rule-strice">Page Rule strict 法</a></li>
+</ol>
+<p>以下會做些簡單的步驟說明來介紹這三種方式要怎麼解決 <strong>Too many redirects</strong> 的問題</p>
+<h2 id="全面-strict-法"><a href="#全面-strict-法" class="headerlink" title="全面 strict 法"></a><a id="strict"></a>全面 strict 法</h2><p>如果你的 server 上原本就已經有 SSL 憑證的話，這應該是最無腦的方法了，只需要將 <strong>Crypto</strong> 裡頭的 SSL 設定從 Flexible 改成 Full(strict) 即可</p>
+<p><img src="/cloudflare-nginx-too-many-redirects/strict.png" alt="將 SSL 改為 Full(strict)"></p>
+<h2 id="強制-https-法"><a href="#強制-https-法" class="headerlink" title="強制 https 法"></a><a id="force-https"></a>強制 https 法</h2><p>另外一個方式就是強制所有使用者在進入網站的時候都使用 https 的方式，Cloudflare 在這部份也有相當簡單的設置方法：</p>
+<ol>
+<li>點選上方的 <strong>Page Rules</strong><br><img src="/cloudflare-nginx-too-many-redirects/page-rules.png" alt="Page Rules"></li>
+<li>Create Page Rule</li>
+<li>照著下圖選擇 <strong>Always Use HTTPS</strong>，網址的部份則是填入你希望使用 https 的網址並再後面加上星號來動態使用<br><img src="/cloudflare-nginx-too-many-redirects/force-https.png" alt="將網址強制使用 https"></li>
+</ol>
+<h2 id="Page-Rule-strict-法"><a href="#Page-Rule-strict-法" class="headerlink" title="Page Rule strict 法"></a><a id="page-rule-strice"></a>Page Rule strict 法</h2><p>這個方法是結合了上面兩種來達成 HTTPS(strict)，利用 Page Rules 來針對特定網址將他改為 HTTPS(strict)，設定的方式也跟 <a href="#force-https">強制 https 法</a> 相當類似<br>基本上的作法就是建個新的 Page Rule，然後將 SSL 改為 strict<br><img src="/cloudflare-nginx-too-many-redirects/page-rules-strict.png" alt="選擇 strice"><br>這樣子就不會影響到其他的 subdomain 進而產生其他問題了</p>
+<h2 id="後記"><a href="#後記" class="headerlink" title="後記"></a>後記</h2><p>基本上會發生這個問題是因為用 Flexible SSL 時，使用者進入到你的網站，nginx 還是會把它視為 http，如果你的 nginx 沒有特別判斷就轉址至 https 時就會產生無限迴圈<br>這三個方法中我自己是選用 <a href="#page-rule-strice">Page Rule strict 法</a>，沒有什麼特別的原因，就只是想說既然有三個 Page Rule 的額度那就來用一下吧XD<br>如果你想從 nginx 那邊下手的話，可以用 <code>$http_x_forwarded_proto</code> 去判斷來源究竟是 http 還是 https 之後再進行轉址處理</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/ssl/" rel="tag"># ssl</a>
+              <a href="/tags/cloudflare/" rel="tag"># cloudflare</a>
+              <a href="/tags/nginx/" rel="tag"># nginx</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/laravel-valet-with-docker/" rel="prev" title="Laravel Valet with Docker">
+      <i class="fa fa-chevron-left"></i> Laravel Valet with Docker
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/yarn-global-add-with-nvm/" rel="next" title="Yarn global add with nvm">
+      Yarn global add with nvm <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="disqus_thread">
+      <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+    </div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#全面-strict-法"><span class="nav-number">1.</span> <span class="nav-text">全面 strict 法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#強制-https-法"><span class="nav-number">2.</span> <span class="nav-text">強制 https 法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Page-Rule-strict-法"><span class="nav-number">3.</span> <span class="nav-text">Page Rule strict 法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#後記"><span class="nav-number">4.</span> <span class="nav-text">後記</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Karl Li"
+      src="https://graph.facebook.com/1069527876/picture?width=200&height=200">
+  <p class="site-author-name" itemprop="name">Karl Li</p>
+  <div class="site-description" itemprop="description">記性不好，還是寫起來好惹 by Karl Li</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">5</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">17</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/killtw" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;killtw" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://www.facebook.com/killtw" title="Facebook → https:&#x2F;&#x2F;www.facebook.com&#x2F;killtw" rel="noopener" target="_blank"><i class="fa fa-fw fa-facebook"></i>Facebook</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Karl Li</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="Symbols count total">6k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="Reading time total">6 mins.</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<script>
+  function loadCount() {
+    var d = document, s = d.createElement('script');
+    s.src = 'https://killtwim.disqus.com/count.js';
+    s.id = 'dsq-count-scr';
+    (d.head || d.body).appendChild(s);
+  }
+  // defer loading until the whole page loading is completed
+  window.addEventListener('load', loadCount, false);
+</script>
+<script>
+  var disqus_config = function() {
+    this.page.url = "https://blog.killtw.im/cloudflare-nginx-too-many-redirects/";
+    this.page.identifier = "cloudflare-nginx-too-many-redirects/";
+    this.page.title = "Cloudflare with nginx: Too many redirects";
+    };
+  NexT.utils.loadComments(document.querySelector('#disqus_thread'), () => {
+    if (window.DISQUS) {
+      DISQUS.reset({
+        reload: true,
+        config: disqus_config
+      });
+    } else {
+      var d = document, s = d.createElement('script');
+      s.src = 'https://killtwim.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', '' + +new Date());
+      (d.head || d.body).appendChild(s);
+    }
+  });
+</script>
+
+</body>
+</html>

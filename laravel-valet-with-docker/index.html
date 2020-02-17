@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon.ico">
+  <link rel="mask-icon" href="/favicon.ico" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"blog.killtw.im","root":"/","scheme":"Mist","version":"7.7.1","exturl":false,"sidebar":{"position":"right","display":"hide","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"active":"disqus","style":"tabs","storage":true,"lazyload":false,"nav":null,"activeClass":"disqus"},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="前一陣子 Laravel 官方推出了輕量化的開發環境解決方案 Valet，他跟 Homestead 最大的不同在於他不是一個完整的 VM，基本上他只有用 Caddy 作為 Web Server 以及 Dnsmasq 來管理網址，也因為使用 Caddy 的關係，所以目前支援的系統只有 Mac。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Laravel Valet with Docker">
+<meta property="og:url" content="https://blog.killtw.im/laravel-valet-with-docker/index.html">
+<meta property="og:site_name" content="買銀杏只會忘了吃">
+<meta property="og:description" content="前一陣子 Laravel 官方推出了輕量化的開發環境解決方案 Valet，他跟 Homestead 最大的不同在於他不是一個完整的 VM，基本上他只有用 Caddy 作為 Web Server 以及 Dnsmasq 來管理網址，也因為使用 Caddy 的關係，所以目前支援的系統只有 Mac。">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://blog.killtw.im/laravel-valet-with-docker/laravel-valet-with-docker.png">
+<meta property="article:published_time" content="2016-06-29T03:41:43.000Z">
+<meta property="article:modified_time" content="2020-02-17T08:23:12.624Z">
+<meta property="article:author" content="Karl Li">
+<meta property="article:tag" content="laravel">
+<meta property="article:tag" content="php">
+<meta property="article:tag" content="docker">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://blog.killtw.im/laravel-valet-with-docker/laravel-valet-with-docker.png">
+
+<link rel="canonical" href="https://blog.killtw.im/laravel-valet-with-docker/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>Laravel Valet with Docker | 買銀杏只會忘了吃</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-80045026-1"></script>
+    <script>
+      if (CONFIG.hostname === location.hostname) {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'UA-80045026-1');
+      }
+    </script>
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="買銀杏只會忘了吃" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">買銀杏只會忘了吃</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <h1 class="site-subtitle" itemprop="description">記性不好，還是寫起來好惹</h1>
+      
+  </div>
+
+  <div class="site-nav-right"></div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="https://about.me/killtw" rel="noopener" target="_blank"><i class="fa fa-fw fa-user"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="en">
+    <link itemprop="mainEntityOfPage" href="https://blog.killtw.im/laravel-valet-with-docker/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://graph.facebook.com/1069527876/picture?width=200&height=200">
+      <meta itemprop="name" content="Karl Li">
+      <meta itemprop="description" content="記性不好，還是寫起來好惹 by Karl Li">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="買銀杏只會忘了吃">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          Laravel Valet with Docker
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2016-06-29 11:41:43" itemprop="dateCreated datePublished" datetime="2016-06-29T11:41:43+08:00">2016-06-29</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2020-02-17 16:23:12" itemprop="dateModified" datetime="2020-02-17T16:23:12+08:00">2020-02-17</time>
+              </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="fa fa-comment-o"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus: </span>
+    
+    <a title="disqus" href="/laravel-valet-with-docker/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="laravel-valet-with-docker/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>2.5k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>2 mins.</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <div class="post-gallery" itemscope itemtype="http://schema.org/ImageGallery">
+            <img src="/laravel-valet-with-docker/laravel-valet-with-docker.png" itemprop="contentUrl">
+        </div>
+        <p>前一陣子 <a href="https://laravel.com/" target="_blank" rel="noopener">Laravel</a> 官方推出了輕量化的開發環境解決方案 <a href="https://laravel.com/docs/master/valet" target="_blank" rel="noopener">Valet</a>，他跟 <a href="https://laravel.com/docs/master/homestead" target="_blank" rel="noopener">Homestead</a> 最大的不同在於他不是一個完整的 VM，基本上他只有用 Caddy 作為 Web Server 以及 Dnsmasq 來管理網址，也因為使用 Caddy 的關係，所以目前支援的系統只有 Mac。</p>
+<a id="more"></a>
+
+<p>由於輕量化的設計，Valet 並未包含任何 Database 跟程式語言，所以這部份我想到應該可以用 <a href="https://www.docker.com/" target="_blank" rel="noopener">Docker</a> 來簡單的處理掉，就順手研究了一下作法，接下來會根據以下步驟進行。</p>
+<ol>
+<li><a href="#install-homebrew">Install Homebrew</a></li>
+<li><a href="#install-composer">Install Composer</a></li>
+<li><a href="#install-valet">Install Valet</a></li>
+<li><a href="#install-docker-for-mac">Install Docker for Mac</a></li>
+<li><a href="#docker-config">Docker config</a></li>
+</ol>
+<h2 id="Install-Homebrew"><a href="#Install-Homebrew" class="headerlink" title="Install Homebrew"></a><a id="install-homebrew"></a>Install Homebrew</h2><p><a href="http://brew.sh/" target="_blank" rel="noopener">Homebrew</a> 可以說是目前 Mac 上最方便的 Package Management 方案，我自己是連 App 的部份都會透過 Homebrew cask 來安裝，這樣每次重新安裝電腦的時候都可以直接透過一個指令安裝完所有的軟體。<br>安裝的步驟也非常簡單，只需要執行下面的 script 就能完成安裝。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/usr/bin/ruby -e <span class="string">"<span class="variable">$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)</span>"</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="Install-Composer"><a href="#Install-Composer" class="headerlink" title="Install Composer"></a><a id="install-composer"></a>Install Composer</h2><p><a href="https://getcomposer.org/" target="_blank" rel="noopener">Composer</a> 是 PHP 的 Dependency Manager，在 Packagist 上有許多開源的套件可以供大家使用，Laravel 以及接下來會用到 Valet 都可以在上面找到並使用。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">php -r <span class="string">"copy('https://getcomposer.org/installer', 'composer-setup.php');"</span> <span class="comment">#下載 Composer Setup script</span></span><br><span class="line">php -r <span class="string">"if (hash_file('SHA384', 'composer-setup.php') === 'e115a8dc7871f15d853148a7fbac7da27d6c0030b848d9b3dc09e2a0388afed865e6a3d6b3c0fad45c48e2b5fc1196ae') &#123; echo 'Installer verified'; &#125; else &#123; echo 'Installer corrupt'; unlink('composer-setup.php'); &#125; echo PHP_EOL;"</span> <span class="comment">#驗證 SHA-384</span></span><br><span class="line">php composer-setup.php <span class="comment">#執行安裝</span></span><br><span class="line">php -r <span class="string">"unlink('composer-setup.php');"</span> <span class="comment">#移除 composer-setup.php</span></span><br></pre></td></tr></table></figure>
+<p>安裝完之後建議執行以下 script 方便之後使用</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mv composer.phar /usr/<span class="built_in">local</span>/bin/composer</span><br></pre></td></tr></table></figure>
+<p>最後在你的 <code>.bashrc</code> 或是 <code>.zhsrc</code> 內中加入</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">export</span> PATH=<span class="string">"<span class="variable">$PATH</span>:<span class="variable">$HOME</span>/.composer/vendor/bin"</span></span><br></pre></td></tr></table></figure>
+<p>這樣子系統才有辦法知道 Composer package 的路徑以便使用。</p>
+<h2 id="Install-Valet"><a href="#Install-Valet" class="headerlink" title="Install Valet"></a><a id="install-valet"></a>Install Valet</h2><p>上面講到 Valet 屬於 Composer package，所以他的安裝是需要透過 Composer 指令來進行</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">composer global require laravel/valet</span><br></pre></td></tr></table></figure>
+<p>安裝完 Package 之後執行</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">valet install</span><br></pre></td></tr></table></figure>
+<p>進行 Valet 的安裝動作，安裝過程中 Valet 會幫你透過 Homebrew 安裝 PHP 7.0 以及其他相關套件。</p>
+<h2 id="Install-Docker-for-Mac"><a href="#Install-Docker-for-Mac" class="headerlink" title="Install Docker for Mac"></a><a id="install-docker-for-mac"></a>Install Docker for Mac</h2><p>到這邊為止 Valet 已經算是安裝完成了，你可以查看 <a href="https://laravel.com/docs/master/valet" target="_blank" rel="noopener">官方文件</a> 來了解 Valet 的使用方式。<br>接下來我們會進行 Docker 的安裝，目前 <a href="https://docs.docker.com/docker-for-mac/" target="_blank" rel="noopener">Docker for Mac</a> 還處於 public beta 的階段，所以大家可以自行斟酌要不要使用XD，安裝方法也很簡單，只需要將 <a href="https://download.docker.com/mac/beta/Docker.dmg" target="_blank" rel="noopener">https://download.docker.com/mac/beta/Docker.dmg</a> 下載之後正常安裝即可。<br>安裝完基本上不需設定，執行之後就可以看到 Docker 已經啟動，不過你還是可以針對 Cpu 以及記憶體的部份自行設定，一般是照預設就很夠用了。</p>
+<h2 id="Docker-config"><a href="#Docker-config" class="headerlink" title="Docker config"></a><a id="docker-config"></a>Docker config</h2><p>目前我在 Docker 裡頭配置了 MariaDB、Redis 以及 Elasticsearch，語言的部份則有 NodeJS 以及 Ruby。<br>安裝方法也不難，基本上也只有幾個步驟而已：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git <span class="built_in">clone</span> https://github.com/killtw/docker.git</span><br></pre></td></tr></table></figure>
+<p>假如你的系統沒有 <code>git</code> 的話也可以透過 <code>https://github.com/killtw/docker/archive/master.zip</code> 下載之後解壓縮使用。<br><code>git clone</code> 或解壓縮之後在目錄內執行</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker-compose up -d redis mariadb elasticsearch</span><br></pre></td></tr></table></figure>
+<p>這樣就會將 MariaDB、Redis、Elasticsearch 跑起來，假如你有不需要的服務的話在指令中將他拿掉就可以了。<br>預設的帳號密碼可以從 <code>docker-compose.yml</code> 中修改。</p>
+<p>語言的使用部份有兩種方式，一是直接執行指令，二則需要在 <code>.bashrc</code> 或 <code>.zshrc</code> 中加入 <code>alias</code> 來使用：</p>
+<h3 id="NodeJS"><a href="#NodeJS" class="headerlink" title="NodeJS"></a>NodeJS</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -it --rm -v $(PWD):/workspace killtw/workspace node</span><br></pre></td></tr></table></figure>
+<h3 id="NPM"><a href="#NPM" class="headerlink" title="NPM"></a>NPM</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -it --rm -v $(PWD):/workspace killtw/workspace npm</span><br></pre></td></tr></table></figure>
+
+<p>基本上就是最後在改變，目前可以是用的有 <code>node, npm, gulp, bower, ruby</code><br>假如不想每次都打那麼長的指令的話，可以在 <code>.bashrc</code> 或 <code>.zshrc</code> 中加入</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">alias</span> node=<span class="string">"docker run -it --rm -v <span class="variable">$(PWD)</span>:/workspace killtw/workspace node"</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="後記"><a href="#後記" class="headerlink" title="後記"></a>後記</h2><p>基本上這樣子該有的東西都有了，就可以開心的開發 Laravel Application 啦～<br>Docker 的部份還不是很熟，而且用法也跟官方比較推薦的 per project 不太一樣，如果大家有更好的作法的話歡迎告訴我，或是直接在 <a href="https://github.com/killtw/docker" target="_blank" rel="noopener">Github</a> 開 issue 給我。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/laravel/" rel="tag"># laravel</a>
+              <a href="/tags/php/" rel="tag"># php</a>
+              <a href="/tags/docker/" rel="tag"># docker</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item"></div>
+      <div class="post-nav-item">
+    <a href="/cloudflare-nginx-too-many-redirects/" rel="next" title="Cloudflare with nginx: Too many redirects">
+      Cloudflare with nginx: Too many redirects <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="disqus_thread">
+      <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+    </div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Install-Homebrew"><span class="nav-number">1.</span> <span class="nav-text">Install Homebrew</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Install-Composer"><span class="nav-number">2.</span> <span class="nav-text">Install Composer</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Install-Valet"><span class="nav-number">3.</span> <span class="nav-text">Install Valet</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Install-Docker-for-Mac"><span class="nav-number">4.</span> <span class="nav-text">Install Docker for Mac</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Docker-config"><span class="nav-number">5.</span> <span class="nav-text">Docker config</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#NodeJS"><span class="nav-number">5.1.</span> <span class="nav-text">NodeJS</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#NPM"><span class="nav-number">5.2.</span> <span class="nav-text">NPM</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#後記"><span class="nav-number">6.</span> <span class="nav-text">後記</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Karl Li"
+      src="https://graph.facebook.com/1069527876/picture?width=200&height=200">
+  <p class="site-author-name" itemprop="name">Karl Li</p>
+  <div class="site-description" itemprop="description">記性不好，還是寫起來好惹 by Karl Li</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">5</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">17</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/killtw" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;killtw" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://www.facebook.com/killtw" title="Facebook → https:&#x2F;&#x2F;www.facebook.com&#x2F;killtw" rel="noopener" target="_blank"><i class="fa fa-fw fa-facebook"></i>Facebook</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Karl Li</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="Symbols count total">6k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="Reading time total">6 mins.</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<script>
+  function loadCount() {
+    var d = document, s = d.createElement('script');
+    s.src = 'https://killtwim.disqus.com/count.js';
+    s.id = 'dsq-count-scr';
+    (d.head || d.body).appendChild(s);
+  }
+  // defer loading until the whole page loading is completed
+  window.addEventListener('load', loadCount, false);
+</script>
+<script>
+  var disqus_config = function() {
+    this.page.url = "https://blog.killtw.im/laravel-valet-with-docker/";
+    this.page.identifier = "laravel-valet-with-docker/";
+    this.page.title = "Laravel Valet with Docker";
+    };
+  NexT.utils.loadComments(document.querySelector('#disqus_thread'), () => {
+    if (window.DISQUS) {
+      DISQUS.reset({
+        reload: true,
+        config: disqus_config
+      });
+    } else {
+      var d = document, s = d.createElement('script');
+      s.src = 'https://killtwim.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', '' + +new Date());
+      (d.head || d.body).appendChild(s);
+    }
+  });
+</script>
+
+</body>
+</html>
