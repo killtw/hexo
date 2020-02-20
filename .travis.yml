@@ -1,22 +1,18 @@
+sudo: false
 language: node_js
 node_js:
-  - '12'
+  - 12
+cache: npm
 branches:
   only:
     - master
-cache:
-  directories:
-    - node_modules
-before_install:
-  - openssl aes-256-cbc -K $encrypted_46a623e08d1b_key -iv $encrypted_46a623e08d1b_iv -in .travis/id_rsa.enc -out ~/.ssh/id_rsa -d
-  - chmod 600 ~/.ssh/id_rsa
-  - eval $(ssh-agent)
-  - ssh-add ~/.ssh/id_rsa
-  - cp .travis/ssh_config ~/.ssh/config
-  - git config --global user.name "Karl Li"
-  - git config --global user.email killtw@gmail.com
-install:
-  - yarn global add hexo-cli
-  - yarn
 script:
-  - hexo deploy
+  - hexo generate
+deploy:
+  provider: pages
+  skip-cleanup: true
+  github-token: $GITHUB_TOKEN
+  keep-history: true
+  on:
+    branch: master
+  local-dir: public
